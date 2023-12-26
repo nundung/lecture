@@ -1,5 +1,42 @@
 // Import
 const router = require("express").Router()
+const {Client} = require("pg")
+
+router.get("/", async (req, res) => {
+    const {id} = req.body
+    const result = {
+        "success": false,
+        "message": "",
+        "data": null
+    }
+    const client = new Client({
+        "user": "ubuntu",
+        "password": "1234",
+        "host": "localhost",
+        "database": "web",
+        "port": 5432
+    })
+    try {
+        if (id === null || id === "" || id === undefined) throw new Error("아이디 비어있음")
+
+        await client.connect()   //데이터베이스 접속
+        const sql = "SELECT * FROM backend.account WHERE id=$1" //물음표 여러개면 $1, $2, $3
+        const values = [id]
+        const data = await client.query(sql, values)
+
+        const row = data.rows      //데이터베이스에서 가져온 값들 중 테이블 값만 저장
+        result.success = true
+        result.data = row
+    }
+    catch (e) {
+        result.message = e
+    }
+    finally {
+        if(client) client.end()     //끊어주지 않으면 언젠가 막힘 1000개까지 접속이 가능하기 때문에 1000개가 넘어가는 순간 막힘
+        res.send(result)
+    }
+})
+
 
 router.post("/", (req, res) => {
     
