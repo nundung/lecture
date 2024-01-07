@@ -4,10 +4,11 @@ const express = require("express")
 const path = require("path")
 const fs = require("fs")
 const https = require("https")
+require("dotenv").config()    //웹서버 전체에 적용
 
 // Init
 const app = express()
-const port = 8001
+const port = 8000
 const httpsPort = 8443
 const options = {
     "key": fs.readFileSync(path.join(__dirname, "./keys/key.pem")),
@@ -20,14 +21,14 @@ app.use(express.json()) //보낼 json을 자동으로 string으로 변환 / 받�
 
 // Apis
 
-// app.get("*", (req, res, next) => {
-//     const protocol = req.protocol
-//     if(protocol === "http"){
-//         const dest = `https://${req.hostname}:8443${req.url}`  //ㄱurl을 재구성 하겠다.
-//         res.redirect(dest)
-//     }
-//     next()
-// })
+app.get("*", (req, res, next) => {
+    const protocol = req.protocol
+    if(protocol === "http"){
+        const dest = `https://${req.hostname}:8443${req.url}`  //url을 재구성 하겠다.
+        res.redirect(dest)
+    }
+    next()
+})
 
 const accountApi = require("./src/routers/account")
 app.use("/account", accountApi)

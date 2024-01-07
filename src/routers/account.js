@@ -1,6 +1,7 @@
 // Import
 const router = require("express").Router()
 const {Client} = require("pg")
+const jwt = require("jsonwebtoken")
 
 router.get("/", async (req, res) => {
     const {id} = req.body
@@ -67,6 +68,38 @@ router.post("/", (req, res) => {
     }
     catch (e) {
         result.message = e.message
+    }
+    finally {
+        res.send(result)
+    }
+})
+
+router.post("/login", (req, res) => {
+    const { id, pw } = req.body
+    const result = {
+        "success": false,
+        "message": "",
+        "data": {
+            "token": ""
+        }
+    }
+    try {
+        if (id !== "stageus" || pw !== "1234") {
+            throw new Error("로그인 정보가 없습니다.")
+        }
+        const token = jwt.sign({
+            "id": id,
+            "name": "스테이지어스",
+            "contact": "010-0000-0000"  //session 때와 동일하게 넣고싶은 값 기입
+        }, "process.env.SECRET_KEY", {
+            "issuer": "stageus",
+            "expiresIn": "2m"   //초로하고 싶으면 s 분은 m 시간은 h
+        })
+        result.success = true
+        result.data.token = token
+    }
+    catch (err) {
+        result.message = err.message
     }
     finally {
         res.send(result)
