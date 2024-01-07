@@ -2,14 +2,18 @@
 const router = require("express").Router()
 const {Client} = require("pg")
 const jwt = require("jsonwebtoken")
+const checkLogin = require("../middlewares/checkLogin")
 
-router.get("/", async (req, res) => {
+router.get("/", checkLogin, async (req, res) => {
     const {id} = req.body
     const result = {
         "success": false,
-        "message": "",
         "data": null
     }
+    
+    const authInfo = req.decoded
+    console.log(authInfo)
+
     const client = new Client({
         "user": "ubuntu",
         "password": "1234",
@@ -19,9 +23,10 @@ router.get("/", async (req, res) => {
     })
     try {
         if (id === null || id === "" || id === undefined) throw new Error("아이디 비어있음")
+        console.log("api 진입함")
 
         await client.connect()   //데이터베이스 접속
-        const sql = "SELECT * FROM backend.account WHERE id=$1" //물음표 여러개면 $1, $2, $3
+        const sql = "SELECT * FROM account WHERE id=$1" //물음표 여러개면 $1, $2, $3
         const values = [id]
         const data = await client.query(sql, values)
 
@@ -29,12 +34,13 @@ router.get("/", async (req, res) => {
         result.success = true
         result.data = row
     }
-    catch (e) {
-        result.message = e
+    catch (err) {
+        result.message = err.message
     }
     finally {
-        if(client) client.end()     //끊어주지 않으면 언젠가 막힘 1000개까지 접속이 가능하기 때문에 1000개가 넘어가는 순간 막힘
         res.send(result)
+        console.log("api 진입함3")
+        if(client) {client.end()}
     }
 })
 
@@ -91,7 +97,7 @@ router.post("/login", (req, res) => {
             "id": id,
             "name": "스테이지어스",
             "contact": "010-0000-0000"  //session 때와 동일하게 넣고싶은 값 기입
-        }, "process.env.SECRET_KEY", {
+        }, process.env.SECRET_KEY, {
             "issuer": "stageus",
             "expiresIn": "2m"   //초로하고 싶으면 s 분은 m 시간은 h
         })

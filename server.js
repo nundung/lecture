@@ -21,14 +21,14 @@ app.use(express.json()) //보낼 json을 자동으로 string으로 변환 / 받�
 
 // Apis
 
-app.get("*", (req, res, next) => {
-    const protocol = req.protocol
-    if(protocol === "http"){
-        const dest = `https://${req.hostname}:8443${req.url}`  //url을 재구성 하겠다.
-        res.redirect(dest)
-    }
-    next()
-})
+// app.get("*", (req, res, next) => {
+//     const protocol = req.protocol
+//     if(protocol === "http"){
+//         const dest = `https://${req.hostname}:8443${req.url}`  //url을 재구성 하겠다.
+//         res.redirect(dest)
+//     }
+//     next()
+// })
 
 const accountApi = require("./src/routers/account")
 app.use("/account", accountApi)
